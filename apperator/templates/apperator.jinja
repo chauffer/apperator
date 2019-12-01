@@ -1,0 +1,175 @@
+{% if spec.create_namespace is defined and spec.create_namespace %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ metadata.namespace }}
+  labels:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+  annotations:
+    {% for k, v in annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+
+{% endif %}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ metadata.name }}
+  namespace: {{ metadata.namespace }}
+  labels:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+  annotations:
+    {% for k, v in annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.annotations is defined %}{% for k, v in spec.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+spec:
+  replicas: {{ spec.replicas|default("1", true) }}
+  selector:
+    matchLabels:
+        {% for k, v in labels.items() %}
+        {{ k }}: "{{ v }}"{% endfor %}
+        {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+        {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+  template:
+    metadata:
+      labels:
+        {% for k, v in labels.items() %}
+        {{ k }}: "{{ v }}"{% endfor %}
+        {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+        {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    spec:
+      containers:
+      {% for container in spec.containers %}
+      - name: {{ metadata.name }}-{{loop.index}}
+        image: {{ container.image }}
+        env:
+        - {name: APPERATOR_NAME, value: "{{ metadata.name }}"}
+        {% if spec.env is defined %}{% for k, v in spec.env.items() %}
+        - {name: {{ k }}, value: "{{v}}" } {% endfor %}{% endif %}
+        {% if container.env is defined %}{% for k, v in container.env.items() %}
+        - {name: {{ k }}, value: "{{v}}" } {% endfor %}{% endif %}
+        {% if container.hostVolumes is defined %}
+        volumeMounts:
+        {% for hostVolume in container.hostVolumes %} {% set splitvolume = hostVolume.split(':') %}
+        - name: hostpath-volume-{{ loop.index }}
+          mountPath: {{splitvolume[1]}}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+      volumes:
+      {% for container in spec.containers %}
+        {% for hostVolume in container.hostVolumes %} {% set splitvolume = hostVolume.split(':') %}
+      - name: hostpath-volume-{{ loop.index }}
+        hostPath:
+          path: {{splitvolume[0]}}
+        {% endfor %}
+      {% endfor %}
+
+{% if 'service' in spec %}
+{% for svc in spec.service %}
+
+{% set defaultSvcName = metadata.name ~ "-svc-" ~ loop.index %}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ svc.name | default(defaultSvcName, true) }}
+  namespace: {{ metadata.namespace }}
+  labels:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    {% if svc.labels is defined %}{% for k, v in svc.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+
+  annotations:
+    {% for k, v in annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.annotations is defined %}{% for k, v in spec.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    {% if svc.annotations is defined %}{% for k, v in svc.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+spec:
+  type: {{ svc.type | default("ClusterIP", true) }}
+  ports:
+  {% for port in svc.ports %}
+  {% set splitport = port.split(':') %}
+  - port: {{ splitport[0] }}
+    targetPort: {{ splitport[1]|default(splitport[0], true) }}
+  {% endfor %}
+  selector:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    {% if svc.labels is defined %}{% for k, v in svc.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if spec.ingress is defined %}
+{% for ingress in spec.ingress %}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apperator-ingress-{{ metadata.name }}-{{ loop.index }}
+  namespace: {{ metadata.namespace }}
+  labels:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+  annotations:
+    {% for k, v in annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.annotations is defined %}{% for k, v in spec.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+spec:
+  ports:
+  - port: {{ ingress.targetPort }}
+  selector:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: apperator-ingress-{{ metadata.name }}-{{loop.index}}
+  namespace: {{ metadata.namespace }}
+  labels:
+    {% for k, v in labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+  annotations:
+    {% for k, v in annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}
+    {% if spec.annotations is defined %}{% for k, v in spec.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+spec:
+  {% if ingress.tls is defined %}
+  tls:
+  - hosts:
+    - '{{ ingress.tls.host | default(ingress.hostname, True) }}'
+    secretName: {{ ingress.tls.secretName }}
+  {% endif %}
+  rules:
+  - host: {{ ingress.hostname }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: apperator-ingress-{{ metadata.name }}-{{ loop.index }}
+          servicePort: {{ ingress.targetPort }}
+{% endfor %}
+{% endif %}

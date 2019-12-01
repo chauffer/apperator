@@ -1,0 +1,21 @@
+apiVersion: apperator.simone.sh/v1alpha1
+Kind: app
+metadata:
+  name: minecraft
+  namespace: minecraft
+spec:
+  create_namespace: True
+  containers:
+  - image: felixklauke/paperspigot
+    hostVolumes:
+    - /opt/k3s/minecraft/config:/opt/minecraft/config
+    - /opt/k3s/minecraft/worlds:/opt/minecraft/worlds
+    - /opt/k3s/minecraft/plugins:/opt/minecraft/plugins
+    - /opt/k3s/minecraft/data:/opt/minecraft/data
+    - /opt/k3s/minecraft/logs:/opt/minecraft/logs
+  service:
+  - ports:
+    - 25565:25565
+    type: NodePort
+  env:
+    PLEX_CLAIM: "blabla"  # https://www.plex.tv/claim

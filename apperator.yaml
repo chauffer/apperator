@@ -1,0 +1,19 @@
+apiVersion: apperator.simone.sh/v1alpha1
+Kind: app
+metadata:
+  name: nginx
+  namespace: restreamer
+spec:
+  create_namespace: True
+  containers:
+  - image: nginx:alpine
+  ingress:
+  - hostname: nginx-testy.simone.sh
+    tls:
+      host: '*.simone.sh'
+      secretName: wildcard-simone-sh-tls
+    targetPort: 80
+  services:
+  - name: nginx-svc
+    ports:
+    - '80:80'

@@ -1,0 +1,18 @@
+apiVersion: apperator.simone.sh/v1alpha1
+Kind: app
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  create_namespace: True
+  containers:
+  - image: plexinc/pms-docker
+    hostVolumes:
+    - /opt/k3s/plex/plex-config:/plex
+    - /opt/k3s/plex/plex-transcode:/transcode
+    - /opt/k3s/plex/plex-data:/data
+  ingress:
+  - hostname: plex.simone.sh
+    targetPort: 32400
+  env:
+    PLEX_CLAIM: "blabla"  # https://www.plex.tv/claim
