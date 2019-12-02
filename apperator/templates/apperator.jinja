@@ -151,10 +151,14 @@ metadata:
     {{ k }}: "{{ v }}"{% endfor %}
     {% if spec.labels is defined %}{% for k, v in spec.labels.items() %}
     {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    {% if ingress.labels is defined %}{% for k, v in ingress.labels.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
   annotations:
     {% for k, v in annotations.items() %}
     {{ k }}: "{{ v }}"{% endfor %}
     {% if spec.annotations is defined %}{% for k, v in spec.annotations.items() %}
+    {{ k }}: "{{ v }}"{% endfor %}{% endif %}
+    {% if ingress.annotations is defined %}{% for k, v in ingress.annotations.items() %}
     {{ k }}: "{{ v }}"{% endfor %}{% endif %}
 spec:
   {% if ingress.tls is defined %}
