@@ -56,16 +56,18 @@ spec:
         - {name: {{ k }}, value: "{{v}}" } {% endfor %}{% endif %}
         {% if container.hostVolumes is defined %}
         volumeMounts:
+        {% set outer_loop = loop %}
         {% for hostVolume in container.hostVolumes %} {% set splitvolume = hostVolume.split(':') %}
-        - name: hostpath-volume-{{ loop.index }}
+        - name: hostpath-volume-{{ outer_loop.index }}-{{ loop.index }}
           mountPath: {{splitvolume[1]}}
         {% endfor %}
         {% endif %}
         {% endfor %}
       volumes:
       {% for container in spec.containers %}
+        {% set outer_loop = loop %}
         {% for hostVolume in container.hostVolumes %} {% set splitvolume = hostVolume.split(':') %}
-      - name: hostpath-volume-{{ loop.index }}
+      - name: hostpath-volume-{{ outer_loop.index }}-{{ loop.index }}
         hostPath:
           path: {{splitvolume[0]}}
         {% endfor %}
