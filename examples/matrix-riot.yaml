@@ -1,0 +1,31 @@
+apiVersion: apperator.simone.sh/v1alpha1
+Kind: app
+metadata:
+  name: matrix-server
+  namespace: matrix
+spec:
+  create_namespace: True
+  containers:
+  - image: matrixdotorg/synapse
+    hostVolumes:
+    - /opt/key/matrix/matrix-server/data:/data
+  ingress:
+  - hostname: matrix.simone.sh
+    targetPort: 8008
+---
+apiVersion: apperator.simone.sh/v1alpha1
+Kind: app
+metadata:
+  name: riot-web
+  namespace: matrix
+spec:
+  create_namespace: False
+  containers:
+  - image: bubuntux/riot-web
+  ingress:
+  - hostname: riot.simone.sh
+    targetPort: 80
+    tls:
+    - hosts:
+      - "*.simone.sh"
+      secretName: wildcard-simone-sh-tls
