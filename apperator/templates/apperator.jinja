@@ -52,6 +52,11 @@ spec:
         command: {{ container.command }} {%endif %}
         {% if container.args is defined %}
         args: {{ container.args }} {% endif %}
+
+        {% if container.ports is defined %}
+        ports: {{ container.ports }}
+        {% endif %}
+
         env:
         - {name: APPERATOR_NAME, value: "{{ metadata.name }}"}
         {% if spec.env is defined %}{% for k, v in spec.env.items() %}
