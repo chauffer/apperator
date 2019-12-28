@@ -48,6 +48,10 @@ spec:
       {% for container in spec.containers %}
       - name: {{ metadata.name }}-{{loop.index}}
         image: {{ container.image }}
+        {% if container.command is defined %}
+        command: {{ container.command }} {%endif %}
+        {% if container.args is defined %}
+        args: {{ container.args }} {% endif %}
         env:
         - {name: APPERATOR_NAME, value: "{{ metadata.name }}"}
         {% if spec.env is defined %}{% for k, v in spec.env.items() %}
