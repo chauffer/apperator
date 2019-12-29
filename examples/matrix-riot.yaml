@@ -12,6 +12,9 @@ spec:
   ingress:
   - hostname: matrix.simone.sh
     targetPort: 8008
+    tls:
+      host: "*.simone.sh"
+      secretName: wildcard-simone-sh-tls
 ---
 apiVersion: apperator.simone.sh/v1alpha1
 Kind: app
@@ -26,6 +29,5 @@ spec:
   - hostname: riot.simone.sh
     targetPort: 80
     tls:
-    - hosts:
-      - "*.simone.sh"
+      host: "*.simone.sh"
       secretName: wildcard-simone-sh-tls
