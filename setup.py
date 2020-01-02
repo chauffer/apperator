@@ -5,7 +5,7 @@ with open('requirements.in') as f:
 
 setup(
     name='apperator',
-    version='0.0.5',
+    version='0.0.6',
     url='https://github.com/chauffer/apperator',
     author='Simone Esposito',
     author_email='chaufnet@gmail.com',
