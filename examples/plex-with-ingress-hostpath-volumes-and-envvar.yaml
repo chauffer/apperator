@@ -11,6 +11,22 @@ spec:
     - /opt/k3s/plex/plex-config:/plex
     - /opt/k3s/plex/plex-transcode:/transcode
     - /opt/k3s/plex/plex-data:/data
+    resources:
+      memory: 512Mi-1024Mi
+      cpu: 0.5-1
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 8112
+      initialDelaySeconds: 30
+      periodSeconds: 30
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 8113
+      initialDelaySeconds: 30
+      periodSeconds: 30
+
   ingress:
   - hostname: plex.simone.sh
     targetPort: 32400

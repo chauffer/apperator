@@ -57,6 +57,31 @@ spec:
         ports: {{ container.ports }}
         {% endif %}
 
+        {% if container.resources is defined %}
+        resources:
+          requests:
+            {% if container.resources.memory is defined %} {% set splitmemory = container.resources.memory.split('-') %}
+            memory: "{{ splitmemory[0] }}"
+            {%endif%}
+            {% if container.resources.cpu is defined %} {% set splitcpu = container.resources.cpu.split('-') %}
+            cpu: "{{ splitcpu[0] }}"
+            {%endif%}
+          limits:
+            {% if container.resources.memory is defined %}
+            memory: "{{ splitmemory[1] | default(splitmemory[0], true) }}"
+            {%endif%}
+            {% if container.resources.cpu is defined %}
+            cpu: "{{ splitcpu[1] | default(splitcpu[0], true) }}"
+            {%endif%}
+      {%endif%}
+      {% if container.livenessProbe is defined %}
+        livenessProbe: {{ container.livenessProbe }}
+      {% endif %}
+
+      {% if container.readinessProbe is defined %}
+        readinessProbe: {{ container.readinessProbe }}
+      {% endif %}
+
         env:
         - {name: APPERATOR_NAME, value: "{{ metadata.name }}"}
         {% if spec.env is defined %}{% for k, v in spec.env.items() %}
