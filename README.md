@@ -42,7 +42,7 @@ spec:
 
 #### Docker
 
-`cat apperator.yaml | docker run --rm -t chauffer/apperator build > manifests.yaml`
+`cat apperator.yaml | docker run --rm -i chauffer/apperator build > manifests.yaml`
 
 #### Python
 
