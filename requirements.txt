@@ -5,7 +5,12 @@
 #    pip-compile
 #
 addict==2.2.1
+    # via -r requirements.in
 click==7.0
-jinja2==2.10.3
-markupsafe==1.1.1         # via jinja2
+    # via -r requirements.in
+jinja2==2.11.3
+    # via -r requirements.in
+markupsafe==1.1.1
+    # via jinja2
 pyyaml==5.1.2
+    # via -r requirements.in
